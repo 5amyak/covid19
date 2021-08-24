@@ -16,6 +16,5 @@ func FetchCovidStats() ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	return body, err
+	return ioutil.ReadAll(resp.Body)
 }

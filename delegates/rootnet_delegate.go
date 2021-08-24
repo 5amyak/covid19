@@ -9,7 +9,6 @@ import (
 )
 
 func FetchRegionalCases() domain.CovidStatsResponse {
-	var err error
 	covidStatsJson, err := clients.FetchCovidStats()
 	helpers.CheckErr(err)
 

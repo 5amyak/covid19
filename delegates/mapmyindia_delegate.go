@@ -10,10 +10,11 @@ import (
 )
 
 func FetchRevGeoCode(lat, lng string) domain.Result {
-	revGeoCodeJSON := clients.FetchRevGeoCode(lat, lng)
+	revGeoCodeJSON, err := clients.FetchRevGeoCode(lat, lng)
+	helpers.CheckErr(err)
 
 	var revGeoCodeResponse domain.RevGeoCodeResponse
-	err := json.Unmarshal([]byte(revGeoCodeJSON), &revGeoCodeResponse)
+	err = json.Unmarshal([]byte(revGeoCodeJSON), &revGeoCodeResponse)
 	helpers.CheckErr(err)
 
 	if revGeoCodeResponse.ResponseCode != 200 || len(revGeoCodeResponse.Results) == 0 {

@@ -31,7 +31,6 @@ func UpdateCaseCount(regionalCase *domain.RegionalCase, lastRefreshedOn time.Tim
 }
 
 func FetchAggregatedCaseCount() map[string]interface{} {
-	var err error
 	groupStage := bson.D{
 		{"$group", bson.D{
 			{"_id", 1},

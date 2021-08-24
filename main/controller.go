@@ -22,8 +22,8 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-	e.PUT("/cases", manager.UpdateCaseCount)
-	e.GET("/cases", manager.GetCaseCount)
+	e.PUT("/covid19/cases", manager.UpdateCaseCount)
+	e.GET("/covid19/cases", manager.GetCaseCount)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
