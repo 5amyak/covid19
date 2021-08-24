@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/covid19/domain"
+	"github.com/covid19/helpers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -25,10 +26,12 @@ func UpdateCaseCount(regionalCase *domain.RegionalCase, lastRefreshedOn time.Tim
 	filter := bson.D{{"state", regionalCase.State}}
 	update := bson.D{{"$set", document}}
 
-	Cases.UpdateOne(context.TODO(), filter, update, opts)
+	_, err := Cases.UpdateOne(context.TODO(), filter, update, opts)
+	helpers.CheckErr(err)
 }
 
 func FetchAggregatedCaseCount() map[string]interface{} {
+	var err error
 	groupStage := bson.D{
 		{"$group", bson.D{
 			{"_id", 1},
@@ -44,9 +47,11 @@ func FetchAggregatedCaseCount() map[string]interface{} {
 		}},
 	}
 
-	cursor, _ := Cases.Aggregate(context.TODO(), mongo.Pipeline{groupStage})
+	cursor, err := Cases.Aggregate(context.TODO(), mongo.Pipeline{groupStage})
+	helpers.CheckErr(err)
 	var results []map[string]interface{}
-	cursor.All(context.TODO(), &results)
+	err = cursor.All(context.TODO(), &results)
+	helpers.CheckErr(err)
 	return results[0]
 }
 
@@ -54,7 +59,8 @@ func FetchCaseCount(state string) map[string]interface{} {
 	filter := bson.D{{"state", state}}
 
 	var result map[string]interface{}
-	Cases.FindOne(context.TODO(), filter).Decode(&result)
+	err := Cases.FindOne(context.TODO(), filter).Decode(&result)
+	helpers.CheckErr(err)
 
 	return result
 }

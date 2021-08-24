@@ -1,6 +1,7 @@
-package controllers
+package manager
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/covid19/delegates"
@@ -9,6 +10,7 @@ import (
 )
 
 func UpdateCaseCount(c echo.Context) error {
+	defer handlerServerError(c)
 	covidStatsResponse := delegates.FetchRegionalCases()
 	for _, v := range covidStatsResponse.Data.RegionalCases {
 		repository.UpdateCaseCount(&v, covidStatsResponse.LastRefreshed)
@@ -18,6 +20,7 @@ func UpdateCaseCount(c echo.Context) error {
 }
 
 func GetCaseCount(c echo.Context) error {
+	defer handlerServerError(c)
 	geoCodeInfo := delegates.FetchRevGeoCode(c.QueryParam("lat"), c.QueryParam("lng"))
 	stateCaseCount := repository.FetchCaseCount(geoCodeInfo.State)
 	stateCaseCount["active"] = stateCaseCount["confirmed"].(int32) - stateCaseCount["deaths"].(int32) - stateCaseCount["discharged"].(int32)
@@ -29,11 +32,23 @@ func GetCaseCount(c echo.Context) error {
 	delete(aggCaseCount, "_id")
 	delete(stateCaseCount, "_id")
 	delete(stateCaseCount, "lastRefreshedOn")
+	delete(stateCaseCount, "state")
 
 	caseCountResponse := make(map[string]interface{})
 	caseCountResponse["India"] = aggCaseCount
-	caseCountResponse[stateCaseCount["state"].(string)] = stateCaseCount
+	caseCountResponse[geoCodeInfo.State] = stateCaseCount
 	caseCountResponse["lastRefreshedOn"] = lastRefreshedOn
 
 	return c.JSON(http.StatusOK, caseCountResponse)
+}
+
+func handlerServerError(c echo.Context) error {
+	if r := recover(); r != nil {
+		if err, ok := r.(error); ok {
+			fmt.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	return nil
 }

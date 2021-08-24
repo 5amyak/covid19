@@ -2,16 +2,23 @@ package delegates
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/covid19/clients"
 	"github.com/covid19/domain"
+	"github.com/covid19/helpers"
 )
 
 func FetchRevGeoCode(lat, lng string) domain.Result {
-	revGeoCodeJSON, _ := clients.FetchRevGeoCode(lat, lng)
+	revGeoCodeJSON := clients.FetchRevGeoCode(lat, lng)
 
 	var revGeoCodeResponse domain.RevGeoCodeResponse
-	json.Unmarshal([]byte(revGeoCodeJSON), &revGeoCodeResponse)
+	err := json.Unmarshal([]byte(revGeoCodeJSON), &revGeoCodeResponse)
+	helpers.CheckErr(err)
+
+	if revGeoCodeResponse.ResponseCode != 200 || len(revGeoCodeResponse.Results) == 0 {
+		panic(errors.New("unable to find state from geocode"))
+	}
 
 	return revGeoCodeResponse.Results[0]
 }
